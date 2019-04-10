@@ -1,0 +1,6 @@
+target/
+.gradle/
+build/
+lib_managed/
+index-*/*
+.idea/

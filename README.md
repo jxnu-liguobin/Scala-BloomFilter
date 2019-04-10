@@ -1,10 +1,16 @@
 ## Scala-bloomfilter
 
-Bloom过滤器用于设置成员存在性测试。它们速度快，空间效率高，但却以准确性为代价。虽然存在一定的错误概率，但是Bloom滤波器从不产生假负片。
+Bloom过滤器用于成员存在性测试。它们速度快，空间效率高，但却以准确性为代价。虽然存在一定的错误概率，但是Bloom滤波器从不产生假负片。
 
-### 使用
+### 构建&使用
 
-要创建一个空的Bloom过滤器，只需使用所需的假阳性概率和希望添加到Bloom过滤器中的元素个数来创建ScalaBloomFilter类的实例。
+1. ```git clone https://github.com/jxnu-liguobin/Scala-BloomFilter```
+2. ```cd Scala-BloomFilter/ ```
+3. ```gradle clean build```
+4. build目录下生成Scala-BloomFilter-1.0-SNAPSHOT.jar
+
+要创建一个空的Bloom过滤器，只需使用所期望的假阳性概率和希望添加到Bloom过滤器中的元素个数来创建ScalaBloomFilter类的实例。
+
 
 ```scala
     val elementCount: Int = 50000 // 测试元素个数
@@ -13,7 +19,7 @@ Bloom过滤器用于设置成员存在性测试。它们速度快，空间效率
 ```
 * 构造函数选择一个哈希函数的长度和数目，这将提供给定的假阳性概率(大约)。
 * 请注意，如果插入的元素多于指定的预期元素数，则实际的假阳性概率将迅速增加。
-* 还有其他几个可用的构造函数，它们为Bloom过滤器的初始化提供了不同级别的控制。您还可以直接指定Bloom过滤器参数(每个元素的位数、散列函数和元素数)。
+* 还有其他几个可用的构造函数，它们为Bloom过滤器的初始化提供了不同级别的控制。您还可以直接指定Bloom过滤器参数（每个元素的位数、散列函数和元素数）。
 
 在创建了Bloom过滤器之后，可以使用add()方法添加新元素。
 ```scala
@@ -52,11 +58,6 @@ if (bf.contains("test1")) {
 - 本库主要用于本人后续爬虫项目[scala-akka-crawler](https://github.com/jxnu-liguobin/scala-akka-crawler)
 - Java 8、Scala 2.12.0、Gradle
 
-### 打包
-
-1. git clone url
-2. cd Scala-BloomFilter/
-3. gradle clean build
 
 
 
