@@ -17,8 +17,7 @@ import scala.collection.JavaConversions
  * @param k 哈希函数数
  * @tparam A 元素泛型的类型
  */
-@SerialVersionUID(1L)
-class ScalaBloomFilter[A](private val c: Double, private val n: Int, private val k: Int) {
+class ScalaBloomFilter[A](private val c: Double, private val n: Int, private val k: Int) extends Serializable {
 
     import ScalaBloomFilter._
 
