@@ -26,6 +26,7 @@ class ScalaBloomFilter[A](private val c: Double, private val n: Int, private val
     private var bitset: BitSet = new BitSet(bitSetSize)
     private val bitsPerElement: Double = c //equals/hascode忽略
     private val expectedNumberOfFilterElements: Int = n // 应添加（最多）个元素
+    @transient
     private var numberOfAddedElements: Int = 0 // 实际添加到Bloom过滤器的元素数，equals/hascode忽略
 
     /**
