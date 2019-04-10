@@ -56,7 +56,7 @@ if (bf.contains("test1")) {
 - Scala-bloomfilter是用Scala编写的一个独立的Bloom过滤器实现它的目的是在没有额外库开销的情况下很容易地将其包含到现有项目中
 本库算法参考[Java-bloomfilter](https://github.com/MagnusS/Java-BloomFilter) 
 - 本项目主要用于本人后续爬虫项目[scala-akka-crawler](https://github.com/jxnu-liguobin/scala-akka-crawler)学习使用，仅供参考
-- Java 8、Scala 2.12.0、Gradle
+- Java 8、Scala 2.11.8、Gradle
 
 
 

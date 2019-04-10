@@ -1,8 +1,8 @@
-package cn.edu.jxnu
+package com.gio.bloomfilter
 
 import java.util.{BitSet, Collection}
 
-import scala.collection.JavaConverters
+import scala.collection.JavaConversions
 
 
 /**
@@ -17,17 +17,16 @@ import scala.collection.JavaConverters
  * @param k 哈希函数数
  * @tparam A 元素泛型的类型
  */
-@SerialVersionUID(1L)
 case class ScalaBloomFilter[A](private val c: Double, private val n: Int, private val k: Int) {
 
     import ScalaBloomFilter._
 
+    private val bitSetSize: Int = Math.ceil(c * n).toInt
     private var bitset: BitSet = new BitSet(bitSetSize)
-    private var bitSetSize: Int = Math.ceil(c * n).toInt
-    private var bitsPerElement: Double = c
-    private var expectedNumberOfFilterElements: Int = n // 应添加（最多）个元素
+    private val bitsPerElement: Double = c
+    private val expectedNumberOfFilterElements: Int = n // 应添加（最多）个元素
     private var numberOfAddedElements: Int = 0 // 实际添加到Bloom过滤器的元素数
-    private var nhf = k
+    private val nhf = k
 
     /**
      * 构造一个空的Bloom过滤器哈希函数(K)的最优数目是根据Bloom的总大小和期望元素的数目来估计的
@@ -127,7 +126,7 @@ case class ScalaBloomFilter[A](private val c: Double, private val n: Int, privat
      * @param c 元素集合 B必须是A的子类
      */
     def addAll[B <: A](c: Collection[B]): Unit = {
-        for (element <- JavaConverters.asScalaIterator(c.iterator())) {
+        for (element <- JavaConversions.asScalaIterator(c.iterator())) {
             add(element)
         }
     }
@@ -169,7 +168,8 @@ case class ScalaBloomFilter[A](private val c: Double, private val n: Int, privat
      * @return 如果c中的所有元素都可以插入到Bloom过滤器中
      */
     def containsAll[B <: A](c: Collection[B]): Boolean = {
-        for (element <- JavaConverters.asScalaIterator(c.iterator())) {
+        //JavaConverters12.0
+        for (element <- JavaConversions.asScalaIterator(c.iterator())) {
             if (!contains(element)) return false
         }
         true
@@ -312,4 +312,3 @@ object ScalaBloomFilter {
         result
     }
 }
-

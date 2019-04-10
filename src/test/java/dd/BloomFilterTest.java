@@ -1,4 +1,5 @@
-import cn.edu.jxnu.ScalaBloomFilter;
+package dd;
+
 import org.junit.Test;
 
 import java.io.UnsupportedEncodingException;
@@ -10,6 +11,9 @@ import java.util.UUID;
 import static junit.framework.TestCase.assertTrue;
 import static org.junit.Assert.*;
 
+/**
+ * 测试单个方法
+ */
 public class BloomFilterTest {
     static Random r = new Random();
 
