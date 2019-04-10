@@ -17,16 +17,16 @@ import scala.collection.JavaConversions
  * @param k 哈希函数数
  * @tparam A 元素泛型的类型
  */
-case class ScalaBloomFilter[A](private val c: Double, private val n: Int, private val k: Int) {
+@SerialVersionUID(1L)
+class ScalaBloomFilter[A](private val c: Double, private val n: Int, private val k: Int) {
 
     import ScalaBloomFilter._
 
     private val bitSetSize: Int = Math.ceil(c * n).toInt
     private var bitset: BitSet = new BitSet(bitSetSize)
-    private val bitsPerElement: Double = c
+    private val bitsPerElement: Double = c //equals/hascode忽略
     private val expectedNumberOfFilterElements: Int = n // 应添加（最多）个元素
-    private var numberOfAddedElements: Int = 0 // 实际添加到Bloom过滤器的元素数
-    private val nhf = k
+    private var numberOfAddedElements: Int = 0 // 实际添加到Bloom过滤器的元素数，equals/hascode忽略
 
     /**
      * 构造一个空的Bloom过滤器哈希函数(K)的最优数目是根据Bloom的总大小和期望元素的数目来估计的
@@ -94,8 +94,7 @@ case class ScalaBloomFilter[A](private val c: Double, private val n: Int, privat
      *
      * @return
      */
-    def getK: Int = nhf
-
+    def getK: Int = k
 
     /**
      * 清空
@@ -104,7 +103,6 @@ case class ScalaBloomFilter[A](private val c: Double, private val n: Int, privat
         bitset.clear
         numberOfAddedElements = 0
     }
-
 
     /**
      * 将字节数组添加到Bloom筛选器中对象的toString()方法的输出用作哈希函数的输入
@@ -168,7 +166,7 @@ case class ScalaBloomFilter[A](private val c: Double, private val n: Int, privat
      * @return 如果c中的所有元素都可以插入到Bloom过滤器中
      */
     def containsAll[B <: A](c: Collection[B]): Boolean = {
-        //JavaConverters12.0
+        //JavaConverters需要12.0
         for (element <- JavaConversions.asScalaIterator(c.iterator())) {
             if (!contains(element)) return false
         }
@@ -234,6 +232,39 @@ case class ScalaBloomFilter[A](private val c: Double, private val n: Int, privat
      * @return 每个元素的位数
      */
     def getBitsPerElement: Double = this.bitSetSize / numberOfAddedElements.asInstanceOf[Double]
+
+
+    /**
+     * 自定义的hashCode
+     *
+     * @return
+     */
+    override def hashCode(): Int = {
+        //默认基数是31而不是61
+        var hash = 7
+        hash = 61 * hash + (if (this.bitset != null) this.bitset.hashCode else 0)
+        hash = 61 * hash + this.expectedNumberOfFilterElements
+        hash = 61 * hash + this.bitSetSize
+        hash = 61 * hash + this.k
+        hash
+    }
+
+    /**
+     * 使用四个字段的equals方法
+     *
+     * @param obj
+     * @return
+     */
+    override def equals(obj: scala.Any): Boolean = {
+        if (obj == null) return false
+        if (getClass ne obj.getClass) return false
+        val other = obj.asInstanceOf[ScalaBloomFilter[A]]
+        if (this.expectedNumberOfFilterElements != other.expectedNumberOfFilterElements) return false
+        if (this.k != other.k) return false
+        if (this.bitSetSize != other.bitSetSize) return false
+        if ((this.bitset != other.bitset) && (this.bitset == null || !this.bitset.equals(other.bitset))) return false
+        true
+    }
 }
 
 object ScalaBloomFilter {
@@ -241,18 +272,17 @@ object ScalaBloomFilter {
     import java.nio.charset.Charset
     import java.security.{MessageDigest, NoSuchAlgorithmException}
 
-    val charset: Charset = Charset.forName("UTF-8") // 用于将哈希值存储为字符串的编码
-    val hashName: String = "MD5" // MD5在大多数情况下具有足够的准确度如果需要的话换成sha1
-    var digestFunction: MessageDigest = null
+    private val charset: Charset = Charset.forName("UTF-8") // 用于将哈希值存储为字符串的编码
+    private val hashName: String = "MD5" // MD5在大多数情况下具有足够的准确度如果需要的话换成sha1
+    private var tmp: MessageDigest = _
 
-    var tmp: MessageDigest = null
     try {
         tmp = java.security.MessageDigest.getInstance(hashName)
     } catch {
         case e: NoSuchAlgorithmException =>
             tmp = null
     }
-    digestFunction = tmp
+    private val digestFunction = tmp
 
     /**
      * * 根据字符串的内容生成摘要

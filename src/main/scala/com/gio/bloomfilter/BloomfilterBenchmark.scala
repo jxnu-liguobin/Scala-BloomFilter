@@ -64,7 +64,7 @@ object BloomfilterBenchmark extends App {
 
     def printStat(start: Long, end: Long): Unit = {
         val diff = (end - start) / 1000.0
-        System.out.println(diff + "s, " + (elementCount / diff) + " elements/s")
+        println(diff + "s, " + (elementCount / diff) + " elements/s")
     }
 
     println("Test expectedFalsePositiveProbability")
