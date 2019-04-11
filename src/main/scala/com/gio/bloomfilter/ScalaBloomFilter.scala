@@ -310,12 +310,12 @@ object ScalaBloomFilter {
 
 
     /**
-     * 根据字节数组的内容生成摘要，并将结果拆分为4字节int，并将其存储在数组中
-     * 摘要函数将被调用，直到生成所需的int数对于每个要消化SALT的调用，SALT被加到数据的前面每次调用时盐增加1
+     * 根据字节数组的内容生成摘要，将结果拆分为4字节int，并将其存储在数组中
+     * 摘要函数被调用时，直到生成所需的int数，对于每一个用于摘要的调用，都将SALT放在数据的前面，每次调用时SALT增加1。
      *
-     * @param data
-     * @param hashes
-     * @return
+     * @param data   指定输入的数据
+     * @param hashes 要产生的散列数/int数。
+     * @return 整数hash数组
      */
     def createHashes(data: Array[Byte], hashes: Int): Array[Int] = {
         val result = new Array[Int](hashes)
