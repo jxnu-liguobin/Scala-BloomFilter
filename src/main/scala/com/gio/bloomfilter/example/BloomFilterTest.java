@@ -1,5 +1,6 @@
-package dd;
+package com.gio.bloomfilter.example;
 
+import com.gio.bloomfilter.ScalaBloomFilter;
 import org.junit.Test;
 
 import java.io.UnsupportedEncodingException;
