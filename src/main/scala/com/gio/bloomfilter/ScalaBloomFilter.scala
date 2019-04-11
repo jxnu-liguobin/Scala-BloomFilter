@@ -2,8 +2,7 @@ package com.gio.bloomfilter
 
 import java.util.{BitSet, Collection}
 
-import scala.collection.JavaConversions
-
+import scala.collection.JavaConversions._
 
 /**
  * Scala布隆过滤器
@@ -47,7 +46,7 @@ class ScalaBloomFilter[A](private val c: Double, private val n: Int, private val
      * @param expectedNumberOfElements Bloom过滤器中的预期元素数
      */
     def this(falsePositiveProbability: Double, expectedNumberOfElements: Int) {
-        //ceil取小，
+        //ceil向上取整计算
         this(Math.ceil(-Math.log(falsePositiveProbability) / Math.log(2)) / Math.log(2), // c = k / ln(2)
             expectedNumberOfElements, Math.ceil(-Math.log(falsePositiveProbability) / Math.log(2)).toInt) // k = ceil(-log_2(false prob.))
 
@@ -124,7 +123,7 @@ class ScalaBloomFilter[A](private val c: Double, private val n: Int, private val
      * @param c 元素集合 B必须是A的子类
      */
     def addAll[B <: A](c: Collection[B]): Unit = {
-        for (element <- JavaConversions.asScalaIterator(c.iterator())) {
+        for (element <- c.iterator()) {
             add(element)
         }
     }
@@ -167,7 +166,7 @@ class ScalaBloomFilter[A](private val c: Double, private val n: Int, private val
      */
     def containsAll[B <: A](c: Collection[B]): Boolean = {
         //JavaConverters需要12.0
-        for (element <- JavaConversions.asScalaIterator(c.iterator())) {
+        for (element <- c) {
             if (!contains(element)) return false
         }
         true
