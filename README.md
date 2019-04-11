@@ -4,6 +4,7 @@
 - Scala-bloomfilter是用Scala编写的一个独立的Bloom过滤器，实现它的目的是在没有额外库开销的情况下很容易地将其包含到现有项目中，参考[blog.locut.us](http://blog.locut.us/2008/01/12/a-decent-stand-alone-java-bloom-filter-implementation/) 
 - 本项目主要用于本人后续爬虫项目[scala-akka-crawler](https://github.com/jxnu-liguobin/scala-akka-crawler)学习使用，仅供参考
 - 假阳性是指因为某种原因把不具备某种特征的数据判断为具有某种特征的结果，即误判。但不会漏判具有某种特征的数据
+- [布隆过滤器简洁介绍](https://blog.csdn.net/xinzhongtianxia/article/details/81294922)
 
 ### 特性
 
