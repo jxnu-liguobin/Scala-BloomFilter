@@ -3,7 +3,7 @@
 - Bloom过滤器用于成员存在性测试，它们速度快，空间效率高，但却以准确性为代价，虽然存在一定的错误概率，但是Bloom滤波器从不产生假负片
 - Scala-bloomfilter是用Scala编写的一个独立的Bloom过滤器，实现它的目的是在没有额外库开销的情况下很容易地将其包含到现有项目中，参考[blog.locut.us](http://blog.locut.us/2008/01/12/a-decent-stand-alone-java-bloom-filter-implementation/) 
 - 本项目主要用于本人后续爬虫项目[scala-akka-crawler](https://github.com/jxnu-liguobin/scala-akka-crawler)学习使用，仅供参考
-- 假阳性是指因为某种原因把不具备某种特征的数据判断为具有某种特征的结果，即误判但不会漏判具有某种特征的数据
+- 假阳性是指因为某种原因把不具备某种特征的数据判断为具有某种特征的结果，即误判。但不会漏判具有某种特征的数据
 
 ### 特性
 
@@ -12,6 +12,12 @@
 * 包含相当彻底的单元测试
 * 使用BitSet
 * 提供计算预期假阳性率
+
+### 环境
+
+- Java 8
+- Scala 2.11.8（为了兼容本人爬虫项目）
+- Gradle
 
 ### 构建&使用
 
@@ -61,18 +67,3 @@ if (bf.contains("test1")) {
     System.out.println("There was a test1.")
 }
 ```
-
-### 环境
-
-- Java 8、
-- Scala 2.11.8
-- Gradle
-
-
-
-
-
-
-
-
-
