@@ -1,5 +1,6 @@
 package com.gio.bloomfilter
 
+import java.util
 import java.util.{BitSet, Collection}
 
 import scala.collection.JavaConversions._
@@ -13,25 +14,28 @@ import scala.collection.JavaConversions._
  * @version 1.0, 2019-04-10
  * @param c 预期元素位数
  * @param n 预期最大元素个数
- * @param k 哈希函数数
+ * @param k 哈希函数个数
  * @tparam A 元素泛型的类型
  */
 class ScalaBloomFilter[A](private val c: Double, private val n: Int, private val k: Int) extends Serializable {
 
     import ScalaBloomFilter._
 
-    private val bitSetSize: Int = Math.ceil(c * n).toInt
+    private var bitSetSize: Int = Math.ceil(c * n).toInt
     private var bitset: BitSet = new BitSet(bitSetSize)
     private val bitsPerElement: Double = c //equals/hascode忽略
-    private val expectedNumberOfFilterElements: Int = n // 应添加（最多）个元素
+    private var expectedNumberOfFilterElements: Int = n // 应添加（最多）个元素
     @transient
     private var numberOfAddedElements: Int = 0 // 实际添加到Bloom过滤器的元素数，equals/hascode忽略
+
+    //标记是否达到了最大，不再需要扩容
+    private var MAX_SIZE: Boolean = false
 
     /**
      * 构造一个空的Bloom过滤器哈希函数(K)的最优数目是根据Bloom的总大小和期望元素的数目来估计的
      *
      * @param bitSetSize              定义筛选器总共应该使用多少位
-     * @param expectedNumberOElements 定义筛选器应包含的元素的最大数量
+     * @param expectedNumberOElements 定义筛选器预期应包含的元素的最大数量
      */
     def this(bitSetSize: Int, expectedNumberOElements: Int) {
         this(bitSetSize / expectedNumberOElements.asInstanceOf[Double], expectedNumberOElements,
@@ -56,14 +60,23 @@ class ScalaBloomFilter[A](private val c: Double, private val n: Int, private val
      * 在现有Bloom过滤器数据的基础上，构造了一种新的Bloom过滤器
      *
      * @param bitSetSize                     定义过滤器应使用的位数
-     * @param expectedNumberOfFilterElements 定义筛选器应包含的元素的最大数量
-     * @param actualNumberOfFilterElements   指定在<code>filterData</code>BitSet中插入了多少个元素
+     * @param expectedNumberOfFilterElements 定义筛选器预期应包含的元素的最大数量
+     * @param actualNumberOfFilterElements   指定在<code>filterData</code>BitSet中插入了多少个元素（实际值）
      * @param filterData                     表示现有Bloom筛选器的BitSet
      */
     def this(bitSetSize: Int, expectedNumberOfFilterElements: Int, actualNumberOfFilterElements: Int, filterData: BitSet) {
         this(bitSetSize, expectedNumberOfFilterElements)
         this.bitset = filterData
         this.numberOfAddedElements = actualNumberOfFilterElements
+    }
+
+    /**
+     * 使用默认的错误率 万分一
+     *
+     * @param expectedNumberOfFilterElements 定义筛选器预期应包含的元素的最大数量
+     */
+    def this(expectedNumberOfFilterElements: Int) {
+        this(ScalaBloomFilter.FALSE_POSITIVE_PROBABILITY, expectedNumberOfFilterElements)
     }
 
     /**
@@ -115,6 +128,30 @@ class ScalaBloomFilter[A](private val c: Double, private val n: Int, private val
             bitset.set(index, true)
         }
         numberOfAddedElements += 1
+        //当实际元素大于预期元素的1.5时，进行扩容1.5倍
+        val newSize = getExpectedNumberOfElements + getExpectedNumberOfElements.>>(1)
+        val level = getExpectedNumberOfElements.>>(2) * 3
+        if (!MAX_SIZE && numberOfAddedElements > level) {
+            //更新预期元素
+            //大于倍则使用MaxValue
+            expectedNumberOfFilterElements = if (0 < newSize && newSize < Int.MaxValue - 8) newSize else {
+                MAX_SIZE = true
+                Int.MaxValue
+            }
+            //更新最大bit数
+            val newBitSetSize = Math.ceil(c * expectedNumberOfFilterElements).toInt
+            //创建更大的集合
+            var newBitset = new BitSet(newBitSetSize)
+            newBitset = this.bitset.clone().asInstanceOf[util.BitSet]
+            //覆盖原集合
+            this.bitset = newBitset
+            this.bitSetSize = newBitSetSize
+            println()
+            Console println s"重置预期元素个数为：$expectedNumberOfFilterElements，当前实际元素个数：$numberOfAddedElements"
+            Console println s"预期每个元素所占bit数（扩容前）：$getExpectedBitsPerElement"
+            Console println s"实际每个元素所占bit数（扩容后）：$getBitsPerElement"
+
+        }
     }
 
     /**
@@ -270,6 +307,9 @@ object ScalaBloomFilter {
 
     import java.nio.charset.Charset
     import java.security.{MessageDigest, NoSuchAlgorithmException}
+
+    //默认十万分一
+    final lazy val FALSE_POSITIVE_PROBABILITY: Double = 0.0001
 
     private val charset: Charset = Charset.forName("UTF-8") // 用于将哈希值存储为字符串的编码
     private val hashName: String = "MD5" // MD5在大多数情况下具有足够的准确度如果需要的话换成sha1
