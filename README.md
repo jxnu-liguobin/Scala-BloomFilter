@@ -94,9 +94,7 @@ if (bf.contains("test1")) {
 布隆过滤器是一个 bit 向量或者说 bit 数组。
 
 ![](https://github.com/jxnu-liguobin/Scala-BloomFilter/blob/master/src/main/resources/array.jpg)
-
 ![](https://github.com/jxnu-liguobin/Scala-BloomFilter/blob/master/src/main/resources/hash.jpg)
-
 ![](https://github.com/jxnu-liguobin/Scala-BloomFilter/blob/master/src/main/resources/array.jpg)
 
 * 为什么存在误判
