@@ -11,7 +11,7 @@
 - [布隆过滤器简洁介绍](https://blog.csdn.net/xinzhongtianxia/article/details/81294922)
 - [大数据算法系列——布隆过滤器](https://www.cnblogs.com/zengdan-develpoer/p/4425167.html)
 - [简书](https://www.jianshu.com/p/2104d11ee0a2)
-
+- [csdn](https://blog.csdn.net/tianyaleixiaowu/article/details/74721877)
 
 ### 特性
 
@@ -76,7 +76,7 @@ if (bf.contains("test1")) {
 }
 ```
 
-### 实现原理
+### 相关问题
 
 * HashMap 的问题
 
@@ -92,6 +92,10 @@ if (bf.contains("test1")) {
 * 布隆过滤器数据结构    
 
 布隆过滤器是一个 bit 向量或者说 bit 数组。
+
+![](https://github.com/jxnu-liguobin/Scala-BloomFilter/tree/master/src/main/resources/error.jpg)
+![](https://github.com/jxnu-liguobin/Scala-BloomFilter/tree/master/src/main/resources/hash.jpg)
+![](https://github.com/jxnu-liguobin/Scala-BloomFilter/tree/master/src/main/resources/array.jpg)
 
 * 为什么存在误判
 
