@@ -95,9 +95,9 @@ if (bf.contains("test1")) {
 
 ![](https://github.com/jxnu-liguobin/Scala-BloomFilter/blob/master/src/main/resources/array.jpg)
 
-![](https://github.com/jxnu-liguobin/Scala-BloomFilter/tree/master/src/main/resources/hash.jpg)
+![](https://github.com/jxnu-liguobin/Scala-BloomFilter/blob/master/src/main/resources/hash.jpg)
 
-![](https://github.com/jxnu-liguobin/Scala-BloomFilter/tree/master/src/main/resources/array.jpg)
+![](https://github.com/jxnu-liguobin/Scala-BloomFilter/blob/master/src/main/resources/array.jpg)
 
 * 为什么存在误判
 
