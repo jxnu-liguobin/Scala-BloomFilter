@@ -50,6 +50,12 @@ object BloomfilterBenchmark extends App {
     for (i <- 0 until elementCount) {
         bf.contains(existingElements.get(i))
     }
+
+    println
+    println("根据公式计算假阳性的预期概率: " + bf.expectedFalsePositiveProbability)
+    println("根据公式计算当前元素的假阳性概率: " + bf.getFalsePositiveProbability)
+    println("计算当前扩容次数: " + bf.getReExcepted())
+
     val end_contains = System.currentTimeMillis
     printStat(start_contains, end_contains)
 
@@ -66,20 +72,4 @@ object BloomfilterBenchmark extends App {
         val diff = (end - start) / 1000.0
         println(diff + "s, " + (elementCount / diff) + " elements/s")
     }
-
-    println("Test expectedFalsePositiveProbability")
-    test
-
-    def test(): Unit = {
-        val bf = new ScalaBloomFilter[String](falsePositiveProbability, elementCount)
-        bf.add("test")
-        if (bf.contains("test")) {
-            println("存在元素: test")
-            println("根据公式计算假阳性的预期概率: " + bf.expectedFalsePositiveProbability)
-        }
-        if (bf.contains("test1")) {
-            System.out.println("There was a test1.")
-        }
-    }
-
 }

@@ -24,12 +24,14 @@ class ScalaBloomFilter[A](private val c: Double, private val n: Int, private val
     private var bitSetSize: Int = Math.ceil(c * n).toInt
     private var bitset: BitSet = new BitSet(bitSetSize)
     private val bitsPerElement: Double = c //equals/hascode忽略
+    @volatile
     private var expectedNumberOfFilterElements: Int = n // 应添加（最多）个元素
     @transient
     private var numberOfAddedElements: Int = 0 // 实际添加到Bloom过滤器的元素数，equals/hascode忽略
 
     //标记是否达到了最大，不再需要扩容
     private var MAX_SIZE: Boolean = false
+    private var reExpectedCount = 0
 
     /**
      * 构造一个空的Bloom过滤器哈希函数(K)的最优数目是根据Bloom的总大小和期望元素的数目来估计的
@@ -82,9 +84,13 @@ class ScalaBloomFilter[A](private val c: Double, private val n: Int, private val
     /**
      * 根据公式计算假阳性的预期概率
      *
+     * 扩容时预期元素个数提升导致概率改变
+     *
      * @return
      */
-    def expectedFalsePositiveProbability: Double = getFalsePositiveProbability(expectedNumberOfFilterElements)
+    def expectedFalsePositiveProbability: Double = {
+        getFalsePositiveProbability(expectedNumberOfFilterElements)
+    }
 
     /**
      * (1 - e^(-k * n / m)) ^ k
@@ -92,21 +98,25 @@ class ScalaBloomFilter[A](private val c: Double, private val n: Int, private val
      * @param numberOfElements
      * @return
      */
-    def getFalsePositiveProbability(numberOfElements: Double): Double = Math.pow(1 - Math.exp(-(k) * numberOfElements.asInstanceOf[Double] / bitSetSize.asInstanceOf[Double]), k)
+    def getFalsePositiveProbability(numberOfElements: Double): Double = {
+        Math.pow(1 - Math.exp(-k * numberOfElements.asInstanceOf[Double] / bitSetSize.asInstanceOf[Double]), k)
+    }
 
     /**
-     * 得到当前出现假阳性的概率概率由Bloom过滤器的大小和添加到其中的当前元素数计算
+     * 得到当前出现假阳性的概率，概率由Bloom过滤器的大小和添加到其中的当前元素数计算
      *
      * @return
      */
-    def getFalsePositiveProbability: Double = getFalsePositiveProbability(numberOfAddedElements)
+    def getFalsePositiveProbability: Double = {
+        getFalsePositiveProbability(numberOfAddedElements)
+    }
 
     /**
      * K是基于Bloom过滤器的大小和插入元素的预期数的哈希函数的最佳数目
      *
      * @return
      */
-    def getK: Int = k
+    def getK: Int = this.k
 
     /**
      * 清空
@@ -128,30 +138,62 @@ class ScalaBloomFilter[A](private val c: Double, private val n: Int, private val
             bitset.set(index, true)
         }
         numberOfAddedElements += 1
-        //当实际元素大于预期元素的1.5时，进行扩容1.5倍
-        val newSize = getExpectedNumberOfElements + getExpectedNumberOfElements.>>(1)
-        val level = getExpectedNumberOfElements.>>(2) * 3
-        if (!MAX_SIZE && numberOfAddedElements > level) {
-            //更新预期元素
-            //大于倍则使用MaxValue
-            expectedNumberOfFilterElements = if (0 < newSize && newSize < Int.MaxValue - 8) newSize else {
-                MAX_SIZE = true
-                Int.MaxValue
+        try {
+            //当实际元素大于预期元素的1.5时，进行扩容1.5倍
+            val newSize = getExpectedNumberOfElements + getExpectedNumberOfElements.>>>(1)
+            val level = getExpectedNumberOfElements.>>>(2) * 3
+            if (!MAX_SIZE && numberOfAddedElements > level) {
+                reExcepted(newSize, level)
             }
-            //更新最大bit数
-            val newBitSetSize = Math.ceil(c * expectedNumberOfFilterElements).toInt
-            //创建更大的集合
-            var newBitset = new BitSet(newBitSetSize)
-            newBitset = this.bitset.clone().asInstanceOf[util.BitSet]
-            //覆盖原集合
-            this.bitset = newBitset
-            this.bitSetSize = newBitSetSize
-            println()
-            Console println s"重置预期元素个数为：$expectedNumberOfFilterElements，当前实际元素个数：$numberOfAddedElements"
-            Console println s"预期每个元素所占bit数（扩容前）：$getExpectedBitsPerElement"
-            Console println s"实际每个元素所占bit数（扩容后）：$getBitsPerElement"
-
+        } catch {
+            case e: Exception => {
+                //TODO 扩容失败
+                //恢复
+            }
         }
+    }
+
+
+    /**
+     * 已知扩容次数
+     *
+     * @return
+     */
+    def getReExcepted(): Int = {
+        this.reExpectedCount
+    }
+
+    /**
+     * 调用此方法时表明预期元素的3/4小于当前实际元素个数，需要进行扩容重置预期元素，且此前未扩容至Int最大值。
+     *
+     * 此处简单实现第一种直接改变BF大小，并提升预期元素个数，未测试。
+     *
+     * 第二种扩容使用多个BF，查询时同时从多个BF中查询
+     *
+     * @param newSize
+     * @param level
+     */
+    private def reExcepted(newSize: Int, level: Int) = {
+
+        if (newSize < 0) {
+            throw new RuntimeException("Capacity should not be less than 0")
+        }
+        //更新预期元素
+        //大于倍则使用MaxValue
+        this.expectedNumberOfFilterElements = if (newSize < Int.MaxValue - 8) newSize else {
+            MAX_SIZE = true
+            Int.MaxValue
+        }
+        //更新最大bit数
+        val newBitSetSize = Math.ceil(c * expectedNumberOfFilterElements).toInt
+        //创建更大的集合
+        val newBitset = new util.BitSet(newBitSetSize)
+        //newBitset = this.bitset.clone().asInstanceOf[util.BitSet] //底层使用复制替换，不能使用这种方法拷贝，否则size与前集合相同
+        //拷贝索引值并覆盖原集合
+        this.bitset = copyFrom(this.bitset, newBitset)
+        this.bitSetSize = newBitSetSize
+        //计算扩容次数
+        reExpectedCount += 1
     }
 
     /**
@@ -163,6 +205,30 @@ class ScalaBloomFilter[A](private val c: Double, private val n: Int, private val
         for (element <- c.iterator()) {
             add(element)
         }
+    }
+
+    /**
+     * 手动将原数据复制过来
+     *
+     * @param src
+     * @param dest
+     * @return
+     */
+    def copyFrom(src: util.BitSet, dest: util.BitSet): util.BitSet = {
+
+        if (src == null || dest == null) {
+            throw new RuntimeException("can't be null")
+        }
+        if (dest.size() < src.size()) {
+            throw new RuntimeException("can't be less than src BitSet")
+        }
+        for (index <- 0 to src.size()) {
+            if (src.get(index)) {
+                dest.set(index, true)
+            }
+        }
+
+        dest
     }
 
     /**
@@ -180,7 +246,9 @@ class ScalaBloomFilter[A](private val c: Double, private val n: Int, private val
      * @param element 元素
      * @return 如果对象可以插入到Bloom过滤器中，则为true
      */
-    def contains(element: A): Boolean = contains(element.toString.getBytes(charset))
+    def contains(element: A): Boolean = {
+        contains(element.toString.getBytes(charset))
+    }
 
     /**
      *
@@ -215,7 +283,9 @@ class ScalaBloomFilter[A](private val c: Double, private val n: Int, private val
      * @param bit the bit to read.
      * @return true if the bit is set, false if it is not.
      */
-    def getBit(bit: Int): Boolean = bitset.get(bit)
+    def getBit(bit: Int): Boolean = {
+        bitset.get(bit)
+    }
 
     /**
      * 在Bloom过滤器中设置一个位集
@@ -232,7 +302,7 @@ class ScalaBloomFilter[A](private val c: Double, private val n: Int, private val
      *
      * @return Bloom过滤器的位集
      */
-    def getBitSet: BitSet = bitset
+    def getBitSet: BitSet = this.bitset
 
     /**
      * 返回Bloom筛选器中的位数使用count()检索插入元素的数量
@@ -253,7 +323,7 @@ class ScalaBloomFilter[A](private val c: Double, private val n: Int, private val
      *
      * @return 预期元素个数
      */
-    def getExpectedNumberOfElements: Int = expectedNumberOfFilterElements
+    def getExpectedNumberOfElements: Int = this.expectedNumberOfFilterElements
 
     /**
      * 当Bloom过滤器满时，获取每个元素的预期位数此值由构造函数在创建Bloom过滤器时设置还请参见getBitsPerElement()
@@ -267,7 +337,9 @@ class ScalaBloomFilter[A](private val c: Double, private val n: Int, private val
      *
      * @return 每个元素的位数
      */
-    def getBitsPerElement: Double = this.bitSetSize / numberOfAddedElements.asInstanceOf[Double]
+    def getBitsPerElement: Double = {
+        this.bitSetSize / numberOfAddedElements.asInstanceOf[Double]
+    }
 
 
     /**
@@ -330,7 +402,9 @@ object ScalaBloomFilter {
      * @param charset 编码
      * @return
      */
-    def createHash(`val`: String, charset: Charset): Int = createHash(`val`.getBytes(charset))
+    def createHash(`val`: String, charset: Charset): Int = {
+        createHash(`val`.getBytes(charset))
+    }
 
     /**
      * 根据字符串的内容生成摘要
@@ -338,7 +412,9 @@ object ScalaBloomFilter {
      * @param `val`
      * @return
      */
-    def createHash(`val`: String): Int = createHash(`val`, charset)
+    def createHash(`val`: String): Int = {
+        createHash(`val`, charset)
+    }
 
     /**
      * 根据字节数组的内容生成摘要
@@ -346,7 +422,9 @@ object ScalaBloomFilter {
      * @param data
      * @return
      */
-    def createHash(data: Array[Byte]): Int = createHashes(data, 1)(0)
+    def createHash(data: Array[Byte]): Int = {
+        createHashes(data, 1)(0)
+    }
 
 
     /**
