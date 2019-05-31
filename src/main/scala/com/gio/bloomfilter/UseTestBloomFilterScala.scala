@@ -1,6 +1,4 @@
-package com.gio.bloomfilter.example
-
-import com.gio.bloomfilter.ScalaBloomFilter
+package com.gio.bloomfilter
 
 /**
  * @author 梦境迷离

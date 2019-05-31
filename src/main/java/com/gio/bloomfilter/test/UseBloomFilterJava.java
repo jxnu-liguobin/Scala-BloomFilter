@@ -1,4 +1,4 @@
-package com.gio.bloomfilter.example;
+package com.gio.bloomfilter.test;
 
 
 import com.gio.bloomfilter.ScalaBloomFilter;

@@ -1,4 +1,4 @@
-package com.gio.bloomfilter.example;
+package com.gio.bloomfilter.test;
 
 import com.gio.bloomfilter.ScalaBloomFilter;
 import org.junit.Test;
@@ -11,6 +11,7 @@ import java.util.UUID;
 
 import static junit.framework.TestCase.assertTrue;
 import static org.junit.Assert.*;
+
 
 /**
  * 测试单个方法
