@@ -1,6 +1,7 @@
 Scala-BloomFilter
 ---
 [![Build Status](https://travis-ci.org/jxnu-liguobin/Scala-BloomFilter.svg?branch=master)](https://travis-ci.org/jxnu-liguobin/Scala-BloomFilter)
+![GitHub top language](https://img.shields.io/github/languages/top/jxnu-liguobin/Scala-BloomFilter.svg)
 ![GitHub](https://img.shields.io/github/license/jxnu-liguobin/Scala-BloomFilter.svg)
 ![GitHub followers](https://img.shields.io/github/followers/jxnu-liguobin.svg)
 
