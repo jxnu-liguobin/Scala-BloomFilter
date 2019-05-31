@@ -2,7 +2,7 @@ Scala-BloomFilter
 ---
 [![Build Status](https://travis-ci.org/jxnu-liguobin/Scala-BloomFilter.svg?branch=master)](https://travis-ci.org/jxnu-liguobin/Scala-BloomFilter)
 ![GitHub top language](https://img.shields.io/github/languages/top/jxnu-liguobin/Scala-BloomFilter.svg)
-![GitHub](https://img.shields.io/github/license/jxnu-liguobin/Scala-BloomFilter.svg)
+![GitHub](https://img.shields.io/github/license/jxnu-liguobin/Scala-BloomFilter.svg?style=plastic)
 ![GitHub followers](https://img.shields.io/github/followers/jxnu-liguobin.svg)
 
 - Bloom过滤器用于成员存在性测试，它们速度快，空间效率高，但却以准确性为代价，虽然存在一定的错误概率，但是Bloom滤波器从不产生假负片
